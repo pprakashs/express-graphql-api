@@ -1,0 +1,38 @@
+//General Transform
+@mixin translate($x) {
+  transform: $x;
+  -webkit-transform: $x;
+  -moz-transform: $x;
+  -ms-transform: $x;
+  -o-transform: $x;
+}
+
+@mixin transform($t) {
+  -webkit-transform: $t;
+  -moz-transform: $t;
+  -ms-transform: $t;
+  -o-transform: $t;
+  transform: $t;
+}
+
+@mixin transformImportant($t) {
+  -webkit-transform: $t !important;
+  -moz-transform: $t !important;
+  -ms-transform: $t !important;
+  -o-transform: $t !important;
+  transform: $t !important;
+}
+
+@mixin transition($x...) {
+  transition: $x;
+  -webkit-transition: $x;
+  -moz-transition: $x;
+  -ms-transition: $x;
+  -o-transition: $x;
+}
+
+@mixin transDelay($d) {
+  -webkit-transition-delay: $d;
+  -moz-transition-delay: $d;
+  transition-delay: $d;
+}

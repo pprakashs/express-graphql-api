@@ -1,0 +1,61 @@
+//drawer
+.drawer-block {
+  $footerHeight: 80px;
+  overflow: hidden;
+  .ant-drawer-content-wrapper {
+    width: calc(100% - 500px) !important;
+  }
+  .ant-drawer-body {
+    background-color: #f7f7f7;
+    padding-bottom: $footerHeight + 30;
+  }
+
+  .ant-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 3px;
+  }
+
+  .ant-drawer-header {
+    padding-left: 70px;
+  }
+  input {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 1px;
+  }
+  .ant-form-item-label label {
+    font-weight: $medium;
+    font-size: 14px;
+    height: auto;
+  }
+  textarea {
+    height: 200px !important;
+  }
+
+  .ant-drawer-footer {
+    position: fixed;
+    height: $footerHeight;
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 3px;
+    bottom: 0;
+    margin-left: -44px;
+    width: 100%;
+    z-index: 99;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &::before {
+      background-color: #f7f7f7;
+      width: 100%;
+      height: 22px;
+      content: '';
+      display: block;
+      position: absolute;
+      top: -23px;
+    }
+    .button {
+      height: 50px;
+    }
+  }
+}

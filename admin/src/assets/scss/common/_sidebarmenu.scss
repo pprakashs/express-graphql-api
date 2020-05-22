@@ -1,0 +1,52 @@
+.side-bar-menu{
+    $font-size: 15px;
+    overflow: auto;
+    height: calc(100vh - 85px);
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    background-color: #fff;
+    padding: 50px 0 50px 30px;
+    ul{
+        background-color: transparent;
+        border: none;
+    }
+
+    a{
+        color: $link-color;
+        font-size: $font-size;
+        text-transform: capitalize;
+        font-weight: $medium;
+    }
+    li{
+        padding: 25px 20px!important;
+        height: auto!important;
+        border-radius: 40px 0 0 0;
+        margin: 5px 0!important;
+        line-height: normal!important;
+        &:hover, 
+        &.ant-menu-item-selected,
+        &:focus{
+            background-color: #F7F7F7!important;
+            color: $brand-color!important;
+            a{
+                color: $brand-color; 
+            }
+        }
+    }
+    .anticon{
+        font-size: 16px;
+    }
+
+    .ant-layout-sider-children{
+        display: flex;
+        flex-flow: column nowrap;
+    }
+    .btn{
+        margin-top: auto;
+        text-align: left;
+        padding: 20px 20px !important;
+        font-weight: $medium;
+        color: $link-color;
+    }
+}

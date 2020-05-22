@@ -1,0 +1,62 @@
+.main-header {
+  padding: 20px 45px;
+  box-shadow: rgba(0, 0, 0, 0.06) 0px 1px 2px;
+  background-color: rgb(255, 255, 255);
+  height: auto;
+  line-height: normal;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99;
+
+  .logo {
+    font-weight: $bold;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 20px;
+    span {
+      color: $brand-color;
+    }
+  }
+  .right-side {
+    .ant-avatar {
+      margin-left: 30px;
+      cursor: pointer;
+    }
+  }
+}
+.user-drop-down {
+  width: 250px;
+  a {
+    padding: 12px 15px;
+    font-size: 14px;
+    font-weight: $medium;
+  }
+}
+
+@media only screen and(max-width: 780px) {
+  .brand-logo {
+    top: 35px;
+    left: 20px;
+    z-index: 66;
+    position: absolute;
+  }
+  .menu-open {
+    .brand-logo {
+      @include transform(translate(0, 0));
+    }
+  }
+}
+
+@media only screen and(max-width: 580px) {
+  .brand-logo {
+    left: 10px;
+  }
+  .footer-nav {
+  }
+}
