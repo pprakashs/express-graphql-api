@@ -11,12 +11,12 @@ const resolvers = {
     products: async () => {
       return await getProducts();
     },
-    deleteProduct: async (root, { id }, { req, res }) => {
+    deleteProduct: async (root, { id }, { req }) => {
       return await deleteOne(id, req);
     },
   },
   Mutation: {
-    signup: async (root, args, { req }) => {
+    signup: async (root, args) => {
       return await signup(args);
     },
     login: async (root, { input }, { req, res }) => {
@@ -24,15 +24,15 @@ const resolvers = {
     },
 
     //FOR PRODUCT
-    addProduct: async (root, { input }, { req, res }) => {
+    addProduct: async (root, { input }, { req }) => {
       return await createProduct(input, req);
     },
-    editProduct: async (root, { id, input }, { req, res }) => {
+    editProduct: async (root, { id, input }, { req }) => {
       return await updateProduct(id, input, req);
     },
 
     //FOR CATEGORY
-    addCategory: async (root, args, { req, res }) => {
+    addCategory: async (root, args, { req }) => {
       return await categoryCtrl.addCategory(args, req);
     },
   },
