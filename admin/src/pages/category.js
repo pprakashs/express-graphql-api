@@ -1,15 +1,18 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import gql from 'graphql-tag';
 import { withApollo } from 'react-apollo';
-import { Layout, Button, Drawer, Typography, Form, Input, Table, notification } from 'antd';
-import { PlusOutlined, LeftOutlined } from '@ant-design/icons';
+import { Layout, Button, Drawer, Typography, Form, Input, Table, notification, Space } from 'antd';
+import { PlusOutlined, LeftOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+
+import { CATEGORY_LIST } from './../helpers/getCategory';
+
 const { Content } = Layout;
 
-const openNotificationWithIcon = (type, name) => {
+const openNotificationWithIcon = (type, description, message) => {
   notification[type]({
-    message: 'Created',
-    description: `${name} has been created`,
-    duration: 1.5,
+    message: message,
+    description,
+    duration: 3,
   });
 };
 
@@ -21,42 +24,87 @@ const ADD_CATEGORY = gql`
   }
 `;
 
-const columns = [
-  {
-    title: 'Name',
-    key: 'name',
-  },
-  {
-    title: 'Slug',
-    key: 'slug',
-  },
-  {
-    title: 'Post Count',
-    key: 'postCount',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (text, record) => (
-      <Space size="middle">
-        <a>Edit</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
+const DELETE_CATEGORY = gql`
+  query($id: ID!) {
+    deleteCategory(id: $id) {
+      status
+      message
+    }
+  }
+`;
 
 class Category extends Component {
-  constructor() {
-    super();
-    this.submitHandle = this.submitHandle.bind(this);
+  constructor(props) {
+    super(props);
   }
-  state = { visible: false, name: null };
+  submitHandle = this.submitHandle.bind(this);
+  handleDelete = this.handleDelete.bind(this);
+  formRef = createRef();
+  state = {
+    visible: false,
+    loading: true,
+    btnLoading: false,
+    data: [],
+  };
 
-  // async componentDidMount() {
-  //   const { data } = await this.props.client.query({query: ADD_CATEGORY});
-  //   console.log(data);
-  // }
+  async getCategory() {
+    const {
+      data: {
+        category: { items },
+      },
+    } = await this.props.client.query({ query: CATEGORY_LIST });
+
+    const data = items.map((el) => {
+      return {
+        key: el.id,
+        ...el,
+      };
+    });
+
+    return data;
+  }
+
+  columns = [
+    {
+      title: 'Name',
+      key: 'name',
+      dataIndex: 'name',
+    },
+    {
+      title: 'Slug',
+      key: 'slug',
+      dataIndex: 'slug',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (text, record) => (
+        <Space size="middle">
+          <Button type="primary" size="medium" icon={<EditOutlined />}>
+            Edit
+          </Button>
+          <Button
+            type="primary"
+            size="medium"
+            icon={<DeleteOutlined />}
+            loading={this.btnLoading}
+            onClick={() => this.handleDelete(record.id)}
+            danger
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  async componentDidMount() {
+    const data = await this.getCategory();
+    this.setState({
+      data,
+      loading: false,
+    });
+  }
 
   showDrawer() {
     this.setState({
@@ -70,24 +118,53 @@ class Category extends Component {
     });
   }
 
-  async submitHandle() {
+  async handleDelete(id) {
+    this.setState({
+      loading: true,
+    });
+
+    const { data } = await this.props.client.query({
+      query: DELETE_CATEGORY,
+      variables: {
+        id,
+      },
+    });
+    openNotificationWithIcon('error', `${data.deleteCategory.message}`, 'Deleted');
+    this.setState({
+      loading: false,
+    });
+  }
+
+  async submitHandle(data) {
+    const { name } = data;
     try {
+      this.setState({
+        loading: true,
+      });
+
       const { data } = await this.props.client.mutate({
         mutation: ADD_CATEGORY,
         variables: {
-          name: this.state.name,
+          name,
         },
       });
-      openNotificationWithIcon('success', data.addCategory.name);
+
+      this.formRef.current.resetFields();
+      openNotificationWithIcon('success', `${data.addCategory.name} has been created`, 'Created');
       this.setState({
-        name: null,
+        loading: false,
       });
-    } catch (error) {}
-  }
-  inputHandle(e) {
-    this.setState({
-      name: e.target.value,
-    });
+      //const categoryList = await this.getCategory();
+      this.setState({
+        data: categoryList,
+        loading: false,
+      });
+    } catch (error) {
+      openNotificationWithIcon('error', `${name} ${error.message.split(':')[1]}`, 'Error');
+      this.setState({
+        loading: false,
+      });
+    }
   }
 
   render() {
@@ -112,27 +189,23 @@ class Category extends Component {
             <LeftOutlined />
           </button>
 
-          <Form onFinish={this.submitHandle} layout="vertical" size="large">
-            <Form.Item
-              label="Category Name"
-              // rules={[{ required: true, message: 'Category title is required' }]}
-              name="name"
-            >
-              <Input onChange={this.inputHandle.bind(this)} name="name" value={this.state.name} />
+          <Form onFinish={this.submitHandle} ref={this.formRef} layout="vertical" size="large">
+            <Form.Item label="Category Name" rules={[{ required: true, message: 'Category title is required' }]} name="name">
+              <Input name="name" />
             </Form.Item>
 
             <footer className="ant-drawer-footer">
               <Button onClick={this.onClose.bind(this)} block={true} type="link" danger>
                 Cancel
               </Button>
-              <Button block={true} type="primary" htmlType="submit" className="button" size="large">
+              <Button block={true} type="primary" htmlType="submit" className="button" size="large" loading={this.state.loading}>
                 Create Category
               </Button>
             </footer>
           </Form>
         </Drawer>
 
-        <Table className="table-block" columns={columns} />
+        <Table className="table-block" columns={this.columns} dataSource={this.state.data} loading={this.state.loading} />
       </Content>
     );
   }

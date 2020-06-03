@@ -39,6 +39,11 @@ const typeDefs = gql`
     slug: String
   }
 
+  type AllCategory {
+    result: Int
+    items: [Category]
+  }
+
   input loginInput {
     email: String!
     password: String!
@@ -49,6 +54,7 @@ const typeDefs = gql`
     description: String
     price: Int
     image: Upload
+    category: [ID]
   }
 
   type allProducts {
@@ -56,10 +62,18 @@ const typeDefs = gql`
     items: [Product]
   }
 
+  type Response {
+    status: String
+    message: String
+  }
+
   type Query {
     getProduct(id: ID!): Product
     products: allProducts
     deleteProduct(id: ID!): String
+
+    category: AllCategory
+    deleteCategory(id: ID!): Response
   }
 
   type Mutation {

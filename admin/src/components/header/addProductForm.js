@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import { useDropzone } from 'react-dropzone';
 
-import { Form, Input, InputNumber, Select, Button } from 'antd';
+import { Form, Input, InputNumber, Select, Button, Skeleton } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
+
+import GetCategory from './../../helpers/getCategory';
 
 const { Option } = Select;
 
@@ -19,22 +21,17 @@ const ADD_PRODUCT = gql`
 `;
 
 const AddProductForm = ({ cancel }) => {
-  const [dWidth, setWidth] = useState(0);
-  const [formRef, setFormRef] = useState(null);
   const [files, setFiles] = useState([]);
+  const [loader, setLoader] = useState(false);
+  const formRef = useRef();
 
   const [mutate, { loading, error, data }] = useMutation(ADD_PRODUCT);
 
-  const saveFormRef = useCallback((node) => {
-    if (node !== null) {
-      setFormRef(node);
-    }
-  }, []);
+  const { catLoading, category } = GetCategory();
 
-  useEffect(() => {
-    setWidth(document.querySelector('.ant-drawer-body').offsetWidth);
-    files.forEach((file) => URL.revokeObjectURL(file.preview));
-  }, [dWidth]);
+  // useEffect(() => {
+  //   //files.forEach((file) => URL.revokeObjectURL(file.preview));
+  // }, []);
 
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(
@@ -46,30 +43,32 @@ const AddProductForm = ({ cancel }) => {
     );
   }, []);
 
-  const submitHandle = () => {
-    const data = formRef.getFieldValue();
+  const submitHandle = async (inputData) => {
+    console.log(inputData);
+    try {
+      inputData.image = files[0];
+      await mutate({ variables: inputData });
 
-    data.image = files[0];
-
-    //formRef.resetFields();
-
-    mutate({ variables: data });
+      // CLEAR FIELD
+      formRef.current.resetFields();
+      setFiles([]);
+    } catch (err) {}
   };
 
   const previewThumb = files.map((file) => (
     <div key={file.name}>
-      <img src={file.preview} width="200" height="200" />
+      <img src={file.preview} alt="" />
     </div>
   ));
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: 'image/png',
+    accept: 'image/jpeg, image/png',
     multiple: false,
   });
 
   return (
-    <Form onFinish={submitHandle} ref={saveFormRef} layout="vertical" size="large">
+    <Form onFinish={submitHandle} ref={formRef} layout="vertical" size="large">
       <Form.Item>
         <div className="image-uploader" {...getRootProps()}>
           <input {...getInputProps()} />
@@ -86,7 +85,7 @@ const AddProductForm = ({ cancel }) => {
         <div className="upload-preview-img">{previewThumb}</div>
       </Form.Item>
 
-      <Form.Item label="Title" name="title">
+      <Form.Item label="Title" name="title" rules={[{ required: true, message: 'Title is required field!' }]}>
         <Input name="title" />
       </Form.Item>
 
@@ -94,27 +93,29 @@ const AddProductForm = ({ cancel }) => {
         <Input.TextArea name="description" />
       </Form.Item>
 
-      <Form.Item
-        label="Price"
-        name="price"
-        // rules={[{ required: true, message: ' ' }]}
-      >
+      <Form.Item label="Price" name="price" rules={[{ required: true, message: 'Price is required field!' }]}>
         <InputNumber type="number" style={{ width: '100%' }} name="price" />
       </Form.Item>
 
       <Form.Item label="Category" name="category">
-        <Select placeholder="Product Category" allowClear>
-          <Option value="male">male</Option>
-          <Option value="female">female</Option>
-          <Option value="other">other</Option>
-        </Select>
+        {!catLoading ? (
+          <Select placeholder="Product Category" allowClear mode="multiple">
+            {category.map((cat) => (
+              <Option key={cat.id} value={cat.id}>
+                {cat.name}
+              </Option>
+            ))}
+          </Select>
+        ) : (
+          <Skeleton.Input style={{ width: '100%' }} active={true} />
+        )}
       </Form.Item>
 
       <footer className="ant-drawer-footer">
         <Button block={true} type="link" danger onClick={cancel}>
           Cancel
         </Button>
-        <Button block={true} type="primary" htmlType="submit" className="button" size="large">
+        <Button block={true} type="primary" htmlType="submit" className="button" size="large" loading={loading}>
           Create Product
         </Button>
       </footer>

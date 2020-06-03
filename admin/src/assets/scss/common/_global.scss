@@ -74,6 +74,15 @@ label {
   }
 }
 
+.ant-select-multiple {
+  .ant-select-selection-item {
+    background: $brand-color;
+    color: #fff;
+    border: none;
+    border-bottom: 5px;
+  }
+}
+
 .ant-layout {
   background-color: #f7f7f7;
 }

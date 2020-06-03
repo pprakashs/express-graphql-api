@@ -7,14 +7,20 @@ const productSchema = new mongoose.Schema({
   },
   slug: String,
   description: String,
-  category: [],
+  category: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Category',
+    },
+  ],
   price: Number,
   image: String,
   imagePath: String,
 });
 
 productSchema.pre('save', function (next) {
-  const titleArray = this.name.split(' ').map((el) => {
+  //replacing all the & to and
+  const titleArray = this.title.split(' ').map((el) => {
     return el.replace('&', 'and');
   });
   this.slug = titleArray.join('-').toLowerCase();

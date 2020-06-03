@@ -14,6 +14,14 @@ const resolvers = {
     deleteProduct: async (root, { id }, { req }) => {
       return await deleteOne(id, req);
     },
+    //FOR CATEGORY
+    category: async () => {
+      return await categoryCtrl.getAllCategory();
+    },
+
+    deleteCategory: async (root, { id }, { req }) => {
+      return await categoryCtrl.deleteCategory(id, req);
+    },
   },
   Mutation: {
     signup: async (root, args) => {
