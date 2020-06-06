@@ -16,6 +16,10 @@ const productSchema = new mongoose.Schema({
   price: Number,
   image: String,
   imagePath: String,
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 productSchema.pre('save', function (next) {

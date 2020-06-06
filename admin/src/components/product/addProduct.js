@@ -1,37 +1,24 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import gql from 'graphql-tag';
-import { useMutation } from '@apollo/react-hooks';
+import React, { useState, useCallback, useRef, useContext } from 'react';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import { useDropzone } from 'react-dropzone';
 
 import { Form, Input, InputNumber, Select, Button, Skeleton } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 
 import GetCategory from './../../helpers/getCategory';
+import { ADD_PRODUCT, PRODUCT_LIST } from './../../helpers/query';
+import ProductContext from './ProductContext';
 
 const { Option } = Select;
 
-const ADD_PRODUCT = gql`
-  mutation($title: String!, $description: String, $price: Int, $image: Upload!) {
-    addProduct(input: { title: $title, description: $description, price: $price, image: $image }) {
-      id
-      title
-      image
-    }
-  }
-`;
-
-const AddProductForm = ({ cancel }) => {
+const AddProduct = ({ cancel }) => {
   const [files, setFiles] = useState([]);
-  const [loader, setLoader] = useState(false);
+  const { setProduct } = useContext(ProductContext);
   const formRef = useRef();
 
   const [mutate, { loading, error, data }] = useMutation(ADD_PRODUCT);
 
   const { catLoading, category } = GetCategory();
-
-  // useEffect(() => {
-  //   //files.forEach((file) => URL.revokeObjectURL(file.preview));
-  // }, []);
 
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(
@@ -44,7 +31,6 @@ const AddProductForm = ({ cancel }) => {
   }, []);
 
   const submitHandle = async (inputData) => {
-    console.log(inputData);
     try {
       inputData.image = files[0];
       await mutate({ variables: inputData });
@@ -86,15 +72,15 @@ const AddProductForm = ({ cancel }) => {
       </Form.Item>
 
       <Form.Item label="Title" name="title" rules={[{ required: true, message: 'Title is required field!' }]}>
-        <Input name="title" />
+        <Input />
       </Form.Item>
 
       <Form.Item label="Description" name="description" size="large">
-        <Input.TextArea name="description" />
+        <Input.TextArea />
       </Form.Item>
 
       <Form.Item label="Price" name="price" rules={[{ required: true, message: 'Price is required field!' }]}>
-        <InputNumber type="number" style={{ width: '100%' }} name="price" />
+        <InputNumber type="number" style={{ width: '100%' }} />
       </Form.Item>
 
       <Form.Item label="Category" name="category">
@@ -123,4 +109,4 @@ const AddProductForm = ({ cancel }) => {
   );
 };
 
-export default AddProductForm;
+export default AddProduct;

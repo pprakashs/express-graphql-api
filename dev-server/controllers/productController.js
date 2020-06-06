@@ -62,6 +62,7 @@ export const createProduct = async ({ image, ...input }, req) => {
     input.imagePath = process.env.UPLOAD_DIR;
     input.image = fName;
   }
+  console.log(input);
 
   const newProduct = await Product.create(input);
   return newProduct;
@@ -72,7 +73,7 @@ export const getProduct = async (args) => {
 };
 
 export const getProducts = async () => {
-  const allProducts = await Product.find({}).populate('category');
+  const allProducts = await Product.find({}).sort({ createdAt: -1 }).populate('category');
   return {
     result: allProducts.length,
     items: allProducts,

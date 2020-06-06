@@ -1,10 +1,10 @@
 import React, { Component, createRef } from 'react';
-import gql from 'graphql-tag';
+
 import { withApollo } from 'react-apollo';
 import { Layout, Button, Drawer, Typography, Form, Input, Table, notification, Space } from 'antd';
 import { PlusOutlined, LeftOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-import { CATEGORY_LIST } from './../helpers/getCategory';
+import { ADD_CATEGORY, DELETE_CATEGORY, CATEGORY_LIST } from './../helpers/query';
 
 const { Content } = Layout;
 
@@ -15,23 +15,6 @@ const openNotificationWithIcon = (type, description, message) => {
     duration: 3,
   });
 };
-
-const ADD_CATEGORY = gql`
-  mutation($name: String!) {
-    addCategory(name: $name) {
-      name
-    }
-  }
-`;
-
-const DELETE_CATEGORY = gql`
-  query($id: ID!) {
-    deleteCategory(id: $id) {
-      status
-      message
-    }
-  }
-`;
 
 class Category extends Component {
   constructor(props) {
@@ -129,7 +112,7 @@ class Category extends Component {
         id,
       },
     });
-    openNotificationWithIcon('error', `${data.deleteCategory.message}`, 'Deleted');
+    openNotificationWithIcon('success', `${data.deleteCategory.message}`, 'Deleted');
     this.setState({
       loading: false,
     });
@@ -154,13 +137,12 @@ class Category extends Component {
       this.setState({
         loading: false,
       });
-      //const categoryList = await this.getCategory();
       this.setState({
-        data: categoryList,
         loading: false,
       });
     } catch (error) {
-      openNotificationWithIcon('error', `${name} ${error.message.split(':')[1]}`, 'Error');
+      console.log(error);
+      openNotificationWithIcon('error', `${name} ${error.message.split(':')[1]} sss`, 'Error');
       this.setState({
         loading: false,
       });

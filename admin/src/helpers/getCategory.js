@@ -1,17 +1,5 @@
-import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-export const CATEGORY_LIST = gql`
-  {
-    category {
-      result
-      items {
-        id
-        name
-        slug
-      }
-    }
-  }
-`;
+import { CATEGORY_LIST } from './query';
 
 const GetCategory = () => {
   const { loading, error, data } = useQuery(CATEGORY_LIST);

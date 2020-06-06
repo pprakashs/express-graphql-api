@@ -6,7 +6,9 @@ const categorySchema = new mongoose.Schema({
     unique: true,
     required: ['true', 'Category name is required!'],
   },
-  slug: String,
+  slug: {
+    type: String,
+  },
 });
 
 categorySchema.pre('save', function (next) {
