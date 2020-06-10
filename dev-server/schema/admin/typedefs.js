@@ -28,6 +28,18 @@ const typeDefs = gql`
     imagePath: String
   }
 
+  # type AddProductRes {
+  #   id: ID
+  #   title: String!
+  #   description: String
+  #   price: Int
+  #   category: [{
+  #     id: ID
+  #   }]
+  #   image: String
+  #   imagePath: String
+  # }
+
   type AuthPayload {
     token: String
     user: User
@@ -65,15 +77,13 @@ const typeDefs = gql`
   type Response {
     status: String
     message: String
+    id: ID
   }
 
   type Query {
     getProduct(id: ID!): Product
     products: allProducts
-    deleteProduct(id: ID!): String
-
     category: AllCategory
-    deleteCategory(id: ID!): Response
   }
 
   type Mutation {
@@ -81,8 +91,11 @@ const typeDefs = gql`
     login(input: loginInput): AuthPayload
     addProduct(input: ProductInput): Product
     editProduct(id: ID, input: ProductInput): Product
+    deleteProduct(id: ID!): Response
 
     addCategory(name: String!): Category
+    deleteCategory(id: ID!): Response
+    updateCategory(id: ID!, name: String!): Category
   }
 `;
 

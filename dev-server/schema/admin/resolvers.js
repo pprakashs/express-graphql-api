@@ -11,16 +11,10 @@ const resolvers = {
     products: async () => {
       return await getProducts();
     },
-    deleteProduct: async (root, { id }, { req }) => {
-      return await deleteOne(id, req);
-    },
+
     //FOR CATEGORY
     category: async () => {
       return await categoryCtrl.getAllCategory();
-    },
-
-    deleteCategory: async (root, { id }, { req }) => {
-      return await categoryCtrl.deleteCategory(id, req);
     },
   },
   Mutation: {
@@ -38,10 +32,19 @@ const resolvers = {
     editProduct: async (root, { id, input }, { req }) => {
       return await updateProduct(id, input, req);
     },
+    deleteProduct: async (root, { id }, { req }) => {
+      return await deleteOne(id, req);
+    },
 
     //FOR CATEGORY
     addCategory: async (root, args, { req }) => {
       return await categoryCtrl.addCategory(args, req);
+    },
+    deleteCategory: async (root, { id }, { req }) => {
+      return await categoryCtrl.deleteCategory(id, req);
+    },
+    updateCategory: async (root, { id, name }, { req }) => {
+      return await categoryCtrl.updateCategory(id, name);
     },
   },
 };

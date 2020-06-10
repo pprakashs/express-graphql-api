@@ -1,6 +1,7 @@
 import { createWriteStream } from 'fs';
 import sharp from 'sharp';
 import Product from '../models/productModel';
+import category from '../../admin/src/pages/category';
 
 //file upload
 const fileUpload = async (image) => {
@@ -62,10 +63,16 @@ export const createProduct = async ({ image, ...input }, req) => {
     input.imagePath = process.env.UPLOAD_DIR;
     input.image = fName;
   }
-  console.log(input);
-
+  //Create new product
   const newProduct = await Product.create(input);
-  return newProduct;
+
+  //response object
+  const responseProduct = await Product.findById(newProduct._id).populate({
+    path: 'category',
+    select: '-__v',
+  });
+
+  return responseProduct;
 };
 
 export const getProduct = async (args) => {
@@ -74,6 +81,7 @@ export const getProduct = async (args) => {
 
 export const getProducts = async () => {
   const allProducts = await Product.find({}).sort({ createdAt: -1 }).populate('category');
+
   return {
     result: allProducts.length,
     items: allProducts,
@@ -98,7 +106,7 @@ export const updateProduct = async (id, input, req) => {
 
 export const deleteOne = async (id, req) => {
   //user authorization and checking is admin or not
-  authorization(req, restrictTo);
+  //authorization(req, restrictTo);
 
   const doc = await Product.findByIdAndDelete(id);
 
@@ -106,5 +114,9 @@ export const deleteOne = async (id, req) => {
     throw new Error('No document found with this ID');
   }
 
-  return `Document related to ${id} has been deleted`;
+  return {
+    status: 'success',
+    message: `Category related to ${id} has been deleted`,
+    id: doc.id,
+  };
 };

@@ -1,13 +1,11 @@
-import React, { Component, createRef } from 'react';
-
-import { withApollo } from 'react-apollo';
-import { Layout, Button, Drawer, Typography, Form, Input, Table, notification, Space } from 'antd';
+import React, { useRef, useState, useEffect } from 'react';
+import { useMutation, useQuery } from '@apollo/react-hooks';
+import { Layout, Button, Drawer, Typography, Form, Input, Table, Empty, notification, Space } from 'antd';
 import { PlusOutlined, LeftOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-import { ADD_CATEGORY, DELETE_CATEGORY, CATEGORY_LIST } from './../helpers/query';
+import { CATEGORY_LIST, ADD_CATEGORY, UPDATE_CATEGORY, DELETE_CATEGORY, LOCAL_STATE_CATEGORIES } from './../graphql/queries';
 
 const { Content } = Layout;
-
 const openNotificationWithIcon = (type, description, message) => {
   notification[type]({
     message: message,
@@ -16,38 +14,50 @@ const openNotificationWithIcon = (type, description, message) => {
   });
 };
 
-class Category extends Component {
-  constructor(props) {
-    super(props);
-  }
-  submitHandle = this.submitHandle.bind(this);
-  handleDelete = this.handleDelete.bind(this);
-  formRef = createRef();
-  state = {
-    visible: false,
-    loading: true,
-    btnLoading: false,
-    data: [],
-  };
+const Category = () => {
+  const [visible, setVisible] = useState(false);
+  const [loader, setLoader] = useState(false);
+  const [buttonState, setButtonState] = useState(null);
+  const [editMode, setEditMode] = useState({
+    mode: false,
+    id: null,
+  });
+  const formRef = useRef(null);
+  const focusInput = useRef(null);
+  const [form] = Form.useForm();
 
-  async getCategory() {
-    const {
-      data: {
-        category: { items },
-      },
-    } = await this.props.client.query({ query: CATEGORY_LIST });
+  //APOLLO QUERY/MUTATION HOOK
+  const { loading, error, data, client } = useQuery(CATEGORY_LIST);
+  const [updateMutate] = useMutation(UPDATE_CATEGORY);
+  const [addMutate] = useMutation(ADD_CATEGORY);
+  const [deleteMutate] = useMutation(DELETE_CATEGORY);
 
-    const data = items.map((el) => {
+  const {
+    data: {
+      allCategory: { items: category },
+    },
+  } = useQuery(LOCAL_STATE_CATEGORIES);
+
+  if (!loading) {
+    const categoryList = data.category.items.map((el) => {
       return {
-        key: el.id,
         ...el,
+        key: el.id,
       };
     });
 
-    return data;
+    client.writeData({
+      data: {
+        allCategory: {
+          items: categoryList,
+          __typename: 'Item',
+        },
+        __typename: 'Category',
+      },
+    });
   }
 
-  columns = [
+  const columns = [
     {
       title: 'Name',
       key: 'name',
@@ -63,15 +73,15 @@ class Category extends Component {
       key: 'action',
       render: (text, record) => (
         <Space size="middle">
-          <Button type="primary" size="medium" icon={<EditOutlined />}>
+          <Button type="primary" size="medium" icon={<EditOutlined />} onClick={() => editHandle(record.id)}>
             Edit
           </Button>
           <Button
             type="primary"
             size="medium"
+            loading={buttonState === record.id ? true : false}
             icon={<DeleteOutlined />}
-            loading={this.btnLoading}
-            onClick={() => this.handleDelete(record.id)}
+            onClick={() => handleDelete(record.id)}
             danger
           >
             Delete
@@ -81,116 +91,127 @@ class Category extends Component {
     },
   ];
 
-  async componentDidMount() {
-    const data = await this.getCategory();
-    this.setState({
-      data,
-      loading: false,
-    });
-  }
-
-  showDrawer() {
-    this.setState({
-      visible: true,
-    });
-  }
-
-  onClose() {
-    this.setState({
-      visible: false,
-    });
-  }
-
-  async handleDelete(id) {
-    this.setState({
-      loading: true,
-    });
-
-    const { data } = await this.props.client.query({
-      query: DELETE_CATEGORY,
-      variables: {
-        id,
-      },
-    });
-    openNotificationWithIcon('success', `${data.deleteCategory.message}`, 'Deleted');
-    this.setState({
-      loading: false,
-    });
-  }
-
-  async submitHandle(data) {
-    const { name } = data;
+  const handleDelete = async (id) => {
+    setButtonState(id);
     try {
-      this.setState({
-        loading: true,
+      await deleteMutate({
+        variables: { id: id },
       });
 
-      const { data } = await this.props.client.mutate({
-        mutation: ADD_CATEGORY,
-        variables: {
-          name,
+      client.writeData({
+        data: {
+          category: {
+            items: category.filter((c) => c.id !== id),
+            __typename: 'Item',
+          },
+          __typename: 'Category',
         },
       });
+    } catch (error) {
+      //setLoader(visible);
+    }
+  };
 
-      this.formRef.current.resetFields();
-      openNotificationWithIcon('success', `${data.addCategory.name} has been created`, 'Created');
-      this.setState({
-        loading: false,
+  const submitHandle = async (inputData) => {
+    try {
+      setLoader(true);
+      const updateCache = (cache, { data: { addCategory } }) => {
+        cache.writeQuery({
+          query: CATEGORY_LIST,
+          data: {
+            category: {
+              items: [addCategory, ...category],
+              __typename: 'Item',
+            },
+            __typename: 'Category',
+          },
+        });
+      };
+
+      await addMutate({
+        variables: inputData,
+        update: updateCache,
       });
-      this.setState({
-        loading: false,
-      });
+
+      formRef.current.resetFields();
+
+      openNotificationWithIcon('success', `${inputData.name} has been created`, 'Created');
+
+      focusInput.current.focus();
+
+      setLoader(false);
     } catch (error) {
       console.log(error);
-      openNotificationWithIcon('error', `${name} ${error.message.split(':')[1]} sss`, 'Error');
-      this.setState({
-        loading: false,
-      });
+      openNotificationWithIcon('error', `${inputData.name} ${error.message.split(':')[1]}`, 'Error');
+      setLoader(false);
     }
-  }
+  };
 
-  render() {
-    return (
-      <Content className="content-layout category-page">
-        <header className="category-page--header">
-          <Typography.Title level={4}>Category</Typography.Title>
-          <Button type="primary" onClick={this.showDrawer.bind(this)} className="button large" size="large">
-            <PlusOutlined /> Add Category
-          </Button>
-        </header>
+  const updateHandle = async (inputData) => {
+    console.log(inputData);
+    const { name } = inputData;
+    const [cat] = category.filter((c) => c.id === editMode.id);
 
-        <Drawer
-          title="Add Category"
-          placement="right"
-          closable={true}
-          onClose={this.onClose.bind(this)}
-          visible={this.state.visible}
-          className="drawer-block"
-        >
-          <button type="button" className="btn back-arrow" onClick={this.onClose.bind(this)}>
-            <LeftOutlined />
-          </button>
+    const updateCache = (cache, { data: { updateCategory } }) => {
+      updateCategory.key = updateCategory.id;
+    };
 
-          <Form onFinish={this.submitHandle} ref={this.formRef} layout="vertical" size="large">
-            <Form.Item label="Category Name" rules={[{ required: true, message: 'Category title is required' }]} name="name">
-              <Input name="name" />
-            </Form.Item>
+    await updateMutate({
+      variables: { id: cat.id, name },
+      update: updateCache,
+    });
+    setEditMode({
+      mode: false,
+      id: null,
+    });
+    openNotificationWithIcon('success', `category has been updated`, 'Updated');
+    setVisible(false);
+  };
 
-            <footer className="ant-drawer-footer">
-              <Button onClick={this.onClose.bind(this)} block={true} type="link" danger>
-                Cancel
-              </Button>
-              <Button block={true} type="primary" htmlType="submit" className="button" size="large" loading={this.state.loading}>
-                Create Category
-              </Button>
-            </footer>
-          </Form>
-        </Drawer>
+  const editHandle = (id) => {
+    setVisible(!visible);
+    setEditMode({
+      mode: true,
+      id,
+    });
+    console.log(editMode);
+    const [cat] = category.filter((c) => c.id === id);
+    form.setFieldsValue({
+      name: cat.name,
+    });
+  };
 
-        <Table className="table-block" columns={this.columns} dataSource={this.state.data} loading={this.state.loading} />
-      </Content>
-    );
-  }
-}
+  return (
+    <Content className="content-layout category-page">
+      <header className="page-top-block--header">
+        <Typography.Title level={4}>Category</Typography.Title>
+        <Button type="primary" onClick={() => setVisible(!visible)} className="button large" size="large">
+          <PlusOutlined /> Add Category
+        </Button>
+      </header>
 
-export default withApollo(Category);
+      <Drawer title="Add Category" placement="right" closable={true} onClose={() => setVisible(!visible)} visible={visible} className="drawer-block">
+        <button type="button" className="btn back-arrow" onClick={() => setVisible(!visible)}>
+          <LeftOutlined />
+        </button>
+
+        <Form onFinish={editMode ? updateHandle : submitHandle} ref={formRef} layout="vertical" size="large" form={form}>
+          <Form.Item label="Category Name" rules={[{ required: true, message: 'Category title is required' }]} name="name">
+            <Input ref={focusInput} />
+          </Form.Item>
+          <footer className="ant-drawer-footer">
+            <Button block={true} type="link" onClick={() => setVisible(!visible)} danger>
+              Cancel
+            </Button>
+            <Button block={true} type="primary" htmlType="submit" className="button" size="large" loading={loader}>
+              {editMode ? 'Update Category' : 'Create Category'}
+            </Button>
+          </footer>
+        </Form>
+      </Drawer>
+      <Table className="table-block" columns={columns} dataSource={category} loading={loading} tableLayout="fixed" />
+    </Content>
+  );
+};
+
+export default Category;

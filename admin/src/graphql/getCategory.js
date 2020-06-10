@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/react-hooks';
-import { CATEGORY_LIST } from './query';
+import { CATEGORY_LIST } from './queries';
 
 const GetCategory = () => {
   const { loading, error, data } = useQuery(CATEGORY_LIST);

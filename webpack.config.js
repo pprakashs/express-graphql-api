@@ -18,22 +18,26 @@ module.exports = {
       },
       {
         test: /\.s[ac]ss$/i,
-        use: ["style-loader", "css-loader", "sass-loader"]
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
       {
         test: /\.less$/,
-        use: [{
-          loader: "style-loader"
-        }, {
-          loader: "css-loader"
-        }, {
-          loader: "less-loader",
-          options: {
-            lessOptions: {
-              javascriptEnabled: true
-            }
-          }
-        }]
+        use: [
+          {
+            loader: 'style-loader',
+          },
+          {
+            loader: 'css-loader',
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true,
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.html$/,
@@ -58,5 +62,6 @@ module.exports = {
     compress: false,
     hot: true,
     port: 5050,
-  }
+    overlay: true,
+  },
 };

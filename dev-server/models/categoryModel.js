@@ -1,21 +1,30 @@
 import mongoose from 'mongoose';
 
-const categorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    unique: true,
-    required: ['true', 'Category name is required!'],
+const categorySchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      unique: true,
+      required: ['true', 'Category name is required!'],
+    },
+    slug: String,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  slug: {
-    type: String,
-  },
-});
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
 categorySchema.pre('save', function (next) {
   //replacing all the & to and
   const titleArray = this.name.split(' ').map((el) => {
     return el.replace('&', 'and');
   });
+
   this.slug = titleArray.join('-').toLowerCase();
   next();
 });
