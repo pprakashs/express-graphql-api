@@ -9,13 +9,12 @@ const client = new ApolloClient({
   link: createUploadLink({
     uri: 'http://localhost:5000/graphql',
   }),
-  resolvers: {},
   cache,
   assumeImmutableResults: true,
 });
 
-cache.writeData({
-  data: store,
-});
+// cache.writeData({
+//   data: store,
+// });
 
 export default client;

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { Layout } from 'antd';
 
+import { ProductProvider } from './context/productContext';
+
 import Header from './components/header/';
 import Navigation from './components/navigation';
 import Product from './pages/product';
@@ -20,7 +22,9 @@ class App extends Component {
             <Navigation />
             <Switch>
               <Route exact path="/">
-                <Product />
+                <ProductProvider>
+                  <Product />
+                </ProductProvider>
               </Route>
               <Route path="/category">
                 <Category />

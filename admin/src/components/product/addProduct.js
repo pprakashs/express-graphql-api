@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useContext, useEffect } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { useDropzone } from 'react-dropzone';
 
@@ -6,18 +6,39 @@ import { Form, Input, InputNumber, Select, Button, Skeleton, notification } from
 import { InboxOutlined } from '@ant-design/icons';
 
 import GetCategory from '../../graphql/getCategory';
-import { ADD_PRODUCT, PRODUCT_LIST } from '../../graphql/queries';
+import { ADD_PRODUCT, PRODUCT_LIST, UPDATE_PRODUCT, PRODUCT } from '../../graphql/queries';
+
+import { ProductContext } from './../../context/productContext';
 
 const { Option } = Select;
 
-const AddProduct = ({ cancel }) => {
+const AddProduct = () => {
   const [files, setFiles] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [state, dispatch] = useContext(ProductContext);
   const formRef = useRef();
+  const [form] = Form.useForm();
 
-  const [addMutate, { loading, error, data }] = useMutation(ADD_PRODUCT);
-
+  const [addMutate] = useMutation(ADD_PRODUCT);
+  const [updateMutate] = useMutation(UPDATE_PRODUCT);
   const { catLoading, category } = GetCategory();
+
+  const { product } = state;
+
+  useEffect(() => {
+    if (product) {
+      const [item] = product;
+
+      form.setFieldsValue({
+        title: item.title,
+        price: item.price,
+        description: item.description,
+        category: item.category.map((cat) => cat.id),
+      });
+    } else {
+      formRef.current.resetFields();
+    }
+  }, [product]);
 
   const openNotificationWithIcon = (type, description, message) => {
     notification[type]({
@@ -38,6 +59,10 @@ const AddProduct = ({ cancel }) => {
   }, []);
 
   const submitHandle = async (inputData) => {
+    console.log(inputData);
+    if (product) {
+      return updateHandle(inputData);
+    }
     try {
       setLoader(!loader);
       inputData.image = files[0];
@@ -60,6 +85,7 @@ const AddProduct = ({ cancel }) => {
       };
 
       await addMutate({ variables: inputData, update: updateCache });
+
       openNotificationWithIcon('success', 'Product has been created', 'Created');
 
       // CLEAR FIELD
@@ -67,8 +93,20 @@ const AddProduct = ({ cancel }) => {
       setFiles([]);
       setLoader(loader);
     } catch (err) {
-      console.log(error);
+      console.log(err);
     }
+  };
+
+  const updateHandle = async (inputData) => {
+    //setLoader(!loader);
+    const [item] = product;
+    inputData.image = files[0];
+    await updateMutate({
+      variables: { id: item.id, ...inputData },
+    });
+    openNotificationWithIcon('success', `product has been updated`, 'Updated');
+    setLoader(loader);
+    dispatch({ type: 'CLOSE_DRAWER' });
   };
 
   const previewThumb = files.map((file) => (
@@ -84,7 +122,7 @@ const AddProduct = ({ cancel }) => {
   });
 
   return (
-    <Form onFinish={submitHandle} ref={formRef} layout="vertical" size="large">
+    <Form onFinish={submitHandle} ref={formRef} layout="vertical" size="large" form={form}>
       <Form.Item>
         <div className="image-uploader" {...getRootProps()}>
           <input {...getInputProps()} />
@@ -98,7 +136,13 @@ const AddProduct = ({ cancel }) => {
           )}
         </div>
 
-        <div className="upload-preview-img">{previewThumb}</div>
+        <div className="upload-preview-img">
+          {files.length === 0 && product ? (
+            <img src={`http://localhost:5050/${product[0].imagePath}/${product[0].image}`} alt={product[0].name} />
+          ) : (
+            previewThumb
+          )}
+        </div>
       </Form.Item>
 
       <Form.Item label="Title" name="title" rules={[{ required: true, message: 'Title is required field!' }]}>
@@ -128,7 +172,7 @@ const AddProduct = ({ cancel }) => {
       </Form.Item>
 
       <footer className="ant-drawer-footer">
-        <Button block={true} type="link" danger onClick={cancel}>
+        <Button block={true} type="link" danger onClick={() => dispatch({ type: 'CLOSE_DRAWER' })}>
           Cancel
         </Button>
         <Button block={true} type="primary" htmlType="submit" className="button" size="large" loading={loader}>

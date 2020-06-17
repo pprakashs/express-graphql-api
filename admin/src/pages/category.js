@@ -14,6 +14,15 @@ const openNotificationWithIcon = (type, description, message) => {
   });
 };
 
+function catList(items) {
+  return items.map((el) => {
+    return {
+      ...el,
+      key: el.id,
+    };
+  });
+}
+
 const Category = () => {
   const [visible, setVisible] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -27,35 +36,22 @@ const Category = () => {
   const [form] = Form.useForm();
 
   //APOLLO QUERY/MUTATION HOOK
-  const { loading, error, data, client } = useQuery(CATEGORY_LIST);
+  const { loading, data, client } = useQuery(CATEGORY_LIST);
   const [updateMutate] = useMutation(UPDATE_CATEGORY);
   const [addMutate] = useMutation(ADD_CATEGORY);
   const [deleteMutate] = useMutation(DELETE_CATEGORY);
 
-  const {
-    data: {
-      allCategory: { items: category },
-    },
-  } = useQuery(LOCAL_STATE_CATEGORIES);
+  const [category, setCategory] = useState([]);
 
-  if (!loading) {
-    const categoryList = data.category.items.map((el) => {
-      return {
-        ...el,
-        key: el.id,
-      };
-    });
+  useEffect(() => {
+    if (!loading) {
+      const {
+        category: { items },
+      } = client.readQuery({ query: CATEGORY_LIST });
 
-    client.writeData({
-      data: {
-        allCategory: {
-          items: categoryList,
-          __typename: 'Item',
-        },
-        __typename: 'Category',
-      },
-    });
-  }
+      setCategory(catList(items));
+    }
+  }, [data]);
 
   const columns = [
     {
@@ -94,17 +90,16 @@ const Category = () => {
   const handleDelete = async (id) => {
     setButtonState(id);
     try {
-      await deleteMutate({
+      deleteMutate({
         variables: { id: id },
-      });
-
-      client.writeData({
-        data: {
-          category: {
-            items: category.filter((c) => c.id !== id),
-            __typename: 'Item',
-          },
-          __typename: 'Category',
+        update: (client, result) => {
+          const allCategory = client.readQuery({ query: CATEGORY_LIST });
+          allCategory.category.items = category.filter((c) => c.id !== id);
+          client.writeQuery({
+            query: CATEGORY_LIST,
+            data: allCategory,
+          });
+          setCategory(catList(allCategory.category.items));
         },
       });
     } catch (error) {
@@ -115,22 +110,19 @@ const Category = () => {
   const submitHandle = async (inputData) => {
     try {
       setLoader(true);
-      const updateCache = (cache, { data: { addCategory } }) => {
-        cache.writeQuery({
-          query: CATEGORY_LIST,
-          data: {
-            category: {
-              items: [addCategory, ...category],
-              __typename: 'Item',
-            },
-            __typename: 'Category',
-          },
-        });
-      };
 
       await addMutate({
         variables: inputData,
-        update: updateCache,
+        update: (cache, { data: { addCategory } }) => {
+          const allCategory = cache.readQuery({ query: CATEGORY_LIST });
+
+          allCategory.category.items = [addCategory, ...category];
+          console.log(allCategory);
+          cache.writeQuery({
+            query: CATEGORY_LIST,
+            data: allCategory,
+          });
+        },
       });
 
       formRef.current.resetFields();
@@ -148,22 +140,18 @@ const Category = () => {
   };
 
   const updateHandle = async (inputData) => {
-    console.log(inputData);
+    setLoader(true);
     const { name } = inputData;
     const [cat] = category.filter((c) => c.id === editMode.id);
 
-    const updateCache = (cache, { data: { updateCategory } }) => {
-      updateCategory.key = updateCategory.id;
-    };
-
     await updateMutate({
       variables: { id: cat.id, name },
-      update: updateCache,
     });
     setEditMode({
       mode: false,
       id: null,
     });
+    setLoader(false);
     openNotificationWithIcon('success', `category has been updated`, 'Updated');
     setVisible(false);
   };
@@ -174,18 +162,26 @@ const Category = () => {
       mode: true,
       id,
     });
-    console.log(editMode);
     const [cat] = category.filter((c) => c.id === id);
     form.setFieldsValue({
       name: cat.name,
     });
   };
 
+  const addCategoryHandle = () => {
+    formRef.current ? formRef.current.resetFields() : null;
+    setEditMode({
+      mode: false,
+      id: null,
+    });
+    setVisible(!visible);
+  };
+
   return (
     <Content className="content-layout category-page">
       <header className="page-top-block--header">
         <Typography.Title level={4}>Category</Typography.Title>
-        <Button type="primary" onClick={() => setVisible(!visible)} className="button large" size="large">
+        <Button type="primary" onClick={addCategoryHandle} className="button large" size="large">
           <PlusOutlined /> Add Category
         </Button>
       </header>
@@ -195,7 +191,7 @@ const Category = () => {
           <LeftOutlined />
         </button>
 
-        <Form onFinish={editMode ? updateHandle : submitHandle} ref={formRef} layout="vertical" size="large" form={form}>
+        <Form onFinish={editMode.mode ? updateHandle : submitHandle} ref={formRef} layout="vertical" size="large" form={form}>
           <Form.Item label="Category Name" rules={[{ required: true, message: 'Category title is required' }]} name="name">
             <Input ref={focusInput} />
           </Form.Item>

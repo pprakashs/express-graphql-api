@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/react-hooks';
 import { CATEGORY_LIST } from './queries';
 
 const GetCategory = () => {
-  const { loading, error, data } = useQuery(CATEGORY_LIST);
+  const { loading, error, data, client } = useQuery(CATEGORY_LIST);
   if (loading) {
     return {
       catLoading: loading,
@@ -12,6 +12,7 @@ const GetCategory = () => {
     category: data.category.items,
     catLoading: loading,
     catError: error,
+    client,
   };
 };
 

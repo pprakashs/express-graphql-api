@@ -90,7 +90,7 @@ const typeDefs = gql`
     signup(name: String, email: String!, password: String!, contactNumber: [Int]): User
     login(input: loginInput): AuthPayload
     addProduct(input: ProductInput): Product
-    editProduct(id: ID, input: ProductInput): Product
+    updateProduct(id: ID, input: ProductInput): Product
     deleteProduct(id: ID!): Response
 
     addCategory(name: String!): Category

@@ -29,7 +29,7 @@ const resolvers = {
     addProduct: async (root, { input }, { req }) => {
       return await createProduct(input, req);
     },
-    editProduct: async (root, { id, input }, { req }) => {
+    updateProduct: async (root, { id, input }, { req }) => {
       return await updateProduct(id, input, req);
     },
     deleteProduct: async (root, { id }, { req }) => {

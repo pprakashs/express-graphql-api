@@ -1,7 +1,6 @@
 import { createWriteStream } from 'fs';
 import sharp from 'sharp';
 import Product from '../models/productModel';
-import category from '../../admin/src/pages/category';
 
 //file upload
 const fileUpload = async (image) => {
@@ -88,13 +87,23 @@ export const getProducts = async () => {
   };
 };
 
-export const updateProduct = async (id, input, req) => {
+export const updateProduct = async (id, { image, ...input }, req) => {
   //user authorization and checking is admin or not
-  authorization(req, restrictTo);
+  // authorization(req, restrictTo);
 
+  if (image) {
+    //const { fName } = await fileUpload(image);
+    const { fName } = await fileUpload(image);
+
+    input.imagePath = process.env.UPLOAD_DIR;
+    input.image = fName;
+  }
   const doc = await Product.findByIdAndUpdate(id, input, {
     new: true,
     runValidators: true,
+  }).populate({
+    path: 'category',
+    select: '-__v',
   });
 
   if (!doc) {
@@ -108,15 +117,15 @@ export const deleteOne = async (id, req) => {
   //user authorization and checking is admin or not
   //authorization(req, restrictTo);
 
-  const doc = await Product.findByIdAndDelete(id);
+  // const doc = await Product.findByIdAndDelete(id);
 
-  if (!doc) {
-    throw new Error('No document found with this ID');
-  }
+  // if (!doc) {
+  //   throw new Error('No document found with this ID');
+  // }
 
   return {
     status: 'success',
     message: `Category related to ${id} has been deleted`,
-    id: doc.id,
+    id: id,
   };
 };

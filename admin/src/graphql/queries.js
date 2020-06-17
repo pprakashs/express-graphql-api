@@ -44,24 +44,6 @@ export const UPDATE_CATEGORY = gql`
 `;
 
 // PRODUCT
-export const ADD_PRODUCT = gql`
-  mutation AllProduct($title: String!, $description: String, $price: Int, $image: Upload!, $category: [ID]) {
-    addProduct(input: { title: $title, description: $description, price: $price, image: $image, category: $category }) {
-      id
-      title
-      image
-      imagePath
-      description
-      price
-      category {
-        id
-        name
-        slug
-      }
-    }
-  }
-`;
-
 export const PRODUCT_LIST = gql`
   query AllProducts {
     products {
@@ -82,18 +64,55 @@ export const PRODUCT_LIST = gql`
   }
 `;
 
+export const ADD_PRODUCT = gql`
+  mutation AllProduct($title: String!, $description: String, $price: Int, $image: Upload!, $category: [ID]) {
+    addProduct(input: { title: $title, description: $description, price: $price, image: $image, category: $category }) {
+      id
+      title
+      image
+      imagePath
+      description
+      price
+      category {
+        id
+        name
+        slug
+      }
+    }
+  }
+`;
+
+export const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct($id: ID!, $title: String!, $description: String, $price: Int, $image: Upload, $category: [ID]) {
+    updateProduct(id: $id, input: { title: $title, description: $description, price: $price, image: $image, category: $category }) {
+      id
+      title
+      image
+      imagePath
+      description
+      price
+      category {
+        id
+        name
+        slug
+      }
+    }
+  }
+`;
+
 export const DELETE_PRODUCT = gql`
   mutation DeleteProduct($id: ID!) {
     deleteProduct(id: $id) {
       status
       message
+      id
     }
   }
 `;
 
 // LOCAL QUERIES
 export const LOCAL_STATE_PRODUCTS = gql`
-  query AllProductsLocal {
+  query AllProduct {
     allProduct @client {
       items {
         id
