@@ -110,6 +110,20 @@ export const DELETE_PRODUCT = gql`
   }
 `;
 
+//LOGIN
+export const LOGIN = gql`
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      user {
+        name
+        role
+        email
+      }
+    }
+  }
+`;
+
 // LOCAL QUERIES
 export const LOCAL_STATE_PRODUCTS = gql`
   query AllProduct {

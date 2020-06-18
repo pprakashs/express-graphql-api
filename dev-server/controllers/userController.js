@@ -1,6 +1,10 @@
 import User from '../models/userModel';
+import { checkAuth } from './auth';
 
-export const getAllUser = async () => {
-    const users = await User.find({});
-    return users;
-}
+const userCtrl = {
+  getMe: async (req) => {
+    return checkAuth(req);
+  },
+};
+
+export default userCtrl;

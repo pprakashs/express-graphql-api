@@ -1,7 +1,9 @@
 import Category from './../models/categoryModel';
+import { checkAuth, restrictTo } from './auth';
 
 const categoryCtrl = {
   addCategory: async (args, req) => {
+    checkAuth(req, restrictTo);
     return await Category.create(args);
   },
 
@@ -14,6 +16,9 @@ const categoryCtrl = {
   },
 
   deleteCategory: async (id, req) => {
+    //ONLY ADMIN CAN FORMER THIS ACTION
+    checkAuth(req, restrictTo);
+
     const doc = await Category.findByIdAndDelete(id);
 
     if (!doc) {

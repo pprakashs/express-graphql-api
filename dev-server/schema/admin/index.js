@@ -17,7 +17,6 @@ const schema = new ApolloServer({
   playground: graphqlDev,
   context: async ({ req, res }) => {
     req.isAuthorization = await authorization(req);
-
     return {
       req,
       res,

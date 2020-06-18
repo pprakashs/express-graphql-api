@@ -42,7 +42,7 @@ export const authorization = async (req) => {
   }
 
   //getting current user from token
-  const currentUser = await User.findOne({ email: decode.user });
+  const currentUser = await User.findOne({ email: decode.user }).select('-__v');
 
   // checking if current user exist or not
   if (!currentUser) {
@@ -107,8 +107,36 @@ export const login = async (args, res) => {
   //creating cookies
   res.cookie('myclothing_login', token, cookiesOption);
 
-  user.status = 'success';
-  user.token = token;
+  // user.status = 'success';
+  // user.token = token;
+  // user.user = user;
+
+  return {
+    token,
+    user,
+  };
+};
+
+// checking authorization
+export const checkAuth = (req, cb) => {
+  const {
+    isAuthorization: { status, message, user },
+  } = req;
+  if (!status) {
+    throw new Error(message);
+  }
+  //callback
+  if (cb) {
+    return cb(user);
+  }
 
   return user;
+};
+
+// restrict callback
+export const restrictTo = (user) => {
+  //perform if user is admin
+  if (user.role !== 'admin') {
+    throw new Error('you do not have permission to perform this action');
+  }
 };

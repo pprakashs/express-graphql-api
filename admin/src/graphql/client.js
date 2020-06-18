@@ -1,20 +1,30 @@
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { createUploadLink } from 'apollo-upload-client';
 import ApolloClient from 'apollo-client';
-import store from './store';
+import { createUploadLink } from 'apollo-upload-client';
+import { setContext } from 'apollo-link-context';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+
+const httpLink = createUploadLink({
+  uri: 'http://localhost:5000/graphql',
+});
+
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem('access_token');
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
 
 const cache = new InMemoryCache();
 
 const client = new ApolloClient({
-  link: createUploadLink({
-    uri: 'http://localhost:5000/graphql',
-  }),
+  link: authLink.concat(httpLink),
   cache,
   assumeImmutableResults: true,
 });
-
-// cache.writeData({
-//   data: store,
-// });
 
 export default client;

@@ -1,4 +1,5 @@
 import { createWriteStream } from 'fs';
+import { checkAuth, restrictTo } from './auth';
 import sharp from 'sharp';
 import Product from '../models/productModel';
 
@@ -31,29 +32,10 @@ const fileUpload = async (image) => {
   });
 };
 
-// checking authorization
-const authorization = (req, cb) => {
-  const {
-    isAuthorization: { status, message, user },
-  } = req;
-  if (!status) {
-    throw new Error(message);
-  }
-  //callback
-  cb(user);
-};
-
-// restrict callback
-const restrictTo = (user) => {
-  //perform if user is admin
-  if (user.role !== 'admin') {
-    throw new Error('you do not have permission to perform this action');
-  }
-};
-
 export const createProduct = async ({ image, ...input }, req) => {
   //user authorization and checking is admin or not
-  //authorization(req, restrictTo);
+  checkAuth(req, restrictTo);
+
   // if there is image
   if (image) {
     //const { fName } = await fileUpload(image);

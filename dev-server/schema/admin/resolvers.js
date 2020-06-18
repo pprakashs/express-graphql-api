@@ -1,50 +1,53 @@
 import { signup, login } from '../../controllers/auth';
 import { createProduct, getProduct, getProducts, updateProduct, deleteOne } from '../../controllers/productController';
-
+import userCtrl from './../../controllers/userController';
 import categoryCtrl from './../../controllers/categoryController';
 
 const resolvers = {
   Query: {
-    getProduct: async (root, args) => {
-      return await getProduct(args);
+    me: (__, args, { req, res }) => {
+      return userCtrl.getMe(req);
     },
-    products: async () => {
-      return await getProducts();
+    getProduct: (root, args) => {
+      return getProduct(args);
+    },
+    products: () => {
+      return getProducts();
     },
 
     //FOR CATEGORY
-    category: async () => {
-      return await categoryCtrl.getAllCategory();
+    category: () => {
+      return categoryCtrl.getAllCategory();
     },
   },
   Mutation: {
-    signup: async (root, args) => {
-      return await signup(args);
+    signup: (root, args) => {
+      return signup(args);
     },
-    login: async (root, { input }, { req, res }) => {
-      return await login(input, res);
+    login: (root, args, { req, res }) => {
+      return login(args, res);
     },
 
     //FOR PRODUCT
-    addProduct: async (root, { input }, { req }) => {
-      return await createProduct(input, req);
+    addProduct: (root, { input }, { req }) => {
+      return createProduct(input, req);
     },
-    updateProduct: async (root, { id, input }, { req }) => {
-      return await updateProduct(id, input, req);
+    updateProduct: (root, { id, input }, { req }) => {
+      return updateProduct(id, input, req);
     },
-    deleteProduct: async (root, { id }, { req }) => {
-      return await deleteOne(id, req);
+    deleteProduct: (root, { id }, { req }) => {
+      return deleteOne(id, req);
     },
 
     //FOR CATEGORY
-    addCategory: async (root, args, { req }) => {
-      return await categoryCtrl.addCategory(args, req);
+    addCategory: (_, { req }) => {
+      return categoryCtrl.addCategory(args, req);
     },
-    deleteCategory: async (root, { id }, { req }) => {
-      return await categoryCtrl.deleteCategory(id, req);
+    deleteCategory: (_, { id }, { req }) => {
+      return categoryCtrl.deleteCategory(id, req);
     },
-    updateCategory: async (root, { id, name }, { req }) => {
-      return await categoryCtrl.updateCategory(id, name);
+    updateCategory: (_, { id, name }, { req }) => {
+      return categoryCtrl.updateCategory(id, name);
     },
   },
 };

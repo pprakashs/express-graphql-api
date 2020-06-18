@@ -86,6 +86,50 @@ label {
 .ant-layout {
   background-color: #f7f7f7;
 }
+#root,
+.ant-layout,
+.full-height {
+  height: 100%;
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.user-form {
+  .logo {
+    font-size: 27px;
+  }
+  &__inner {
+    background-color: #fff;
+    padding: 40px;
+  }
+  h4 {
+    text-align: center;
+    font-size: 16px;
+    font-weight: $normal;
+    margin: 5px 0 30px;
+  }
+}
+
+.ant-form-item-explain {
+  font-size: 12px;
+  margin-bottom: 10px;
+  text-align: right;
+  padding-top: 5px;
+}
+
+.ant-form-item-has-error {
+  .ant-input,
+  .ant-input-affix-wrapper {
+    border-color: #e6e6e6;
+  }
+}
+
+.error-box {
+  margin-bottom: 20px;
+}
 
 .content-layout {
   padding: 125px 30px 0 340px;

@@ -92,7 +92,7 @@ const Category = () => {
     try {
       deleteMutate({
         variables: { id: id },
-        update: (client, result) => {
+        update(client, result) {
           const allCategory = client.readQuery({ query: CATEGORY_LIST });
           allCategory.category.items = category.filter((c) => c.id !== id);
           client.writeQuery({

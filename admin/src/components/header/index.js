@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import { Layout, Button } from 'antd';
 
 import UserAvatar from './userAvatar';
@@ -17,6 +16,9 @@ class Header extends Component {
         </div>
 
         <div className="right-side">
+          <Button type="primary" size="middle">
+            Logout
+          </Button>
           <UserAvatar />
         </div>
       </Nav>

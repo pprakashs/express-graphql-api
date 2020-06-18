@@ -1,40 +1,30 @@
-import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { ApolloProvider } from '@apollo/react-hooks';
-import { Layout } from 'antd';
+import { Layout as Container } from 'antd';
 
-import { ProductProvider } from './context/productContext';
-
-import Header from './components/header/';
-import Navigation from './components/navigation';
-import Product from './pages/product';
-import Category from './pages/category';
-
+import { AuthProvider } from './context/auth';
 import client from './graphql/client';
+import { AuthRoute } from './util/authRoute';
 
-class App extends Component {
-  render() {
-    return (
-      <ApolloProvider client={client}>
-        <Layout>
+import Login from './pages/login';
+
+import Layout from './components/layout';
+
+const App = () => {
+  return (
+    <ApolloProvider client={client}>
+      <Container>
+        <AuthProvider>
           <Router>
-            <Header />
-            <Navigation />
-            <Switch>
-              <Route exact path="/">
-                <ProductProvider>
-                  <Product />
-                </ProductProvider>
-              </Route>
-              <Route path="/category">
-                <Category />
-              </Route>
-            </Switch>
+            <AuthRoute exact path="/login" component={Login} />
+
+            <Layout />
           </Router>
-        </Layout>
-      </ApolloProvider>
-    );
-  }
-}
+        </AuthProvider>
+      </Container>
+    </ApolloProvider>
+  );
+};
 
 export default App;

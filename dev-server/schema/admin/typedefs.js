@@ -18,6 +18,12 @@ const typeDefs = gql`
     message: String
   }
 
+  type Me {
+    name: String
+    email: String
+    role: String
+  }
+
   type Product {
     id: ID
     title: String!
@@ -42,7 +48,7 @@ const typeDefs = gql`
 
   type AuthPayload {
     token: String
-    user: User
+    user: Me
   }
 
   type Category {
@@ -54,11 +60,6 @@ const typeDefs = gql`
   type AllCategory {
     result: Int
     items: [Category]
-  }
-
-  input loginInput {
-    email: String!
-    password: String!
   }
 
   input ProductInput {
@@ -81,6 +82,7 @@ const typeDefs = gql`
   }
 
   type Query {
+    me: Me
     getProduct(id: ID!): Product
     products: allProducts
     category: AllCategory
@@ -88,7 +90,7 @@ const typeDefs = gql`
 
   type Mutation {
     signup(name: String, email: String!, password: String!, contactNumber: [Int]): User
-    login(input: loginInput): AuthPayload
+    login(email: String!, password: String!): AuthPayload
     addProduct(input: ProductInput): Product
     updateProduct(id: ID, input: ProductInput): Product
     deleteProduct(id: ID!): Response
