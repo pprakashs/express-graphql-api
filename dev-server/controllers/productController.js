@@ -71,7 +71,7 @@ export const getProducts = async () => {
 
 export const updateProduct = async (id, { image, ...input }, req) => {
   //user authorization and checking is admin or not
-  // authorization(req, restrictTo);
+  checkAuth(req, restrictTo);
 
   if (image) {
     //const { fName } = await fileUpload(image);
@@ -97,17 +97,17 @@ export const updateProduct = async (id, { image, ...input }, req) => {
 
 export const deleteOne = async (id, req) => {
   //user authorization and checking is admin or not
-  //authorization(req, restrictTo);
+  checkAuth(req, restrictTo);
 
-  // const doc = await Product.findByIdAndDelete(id);
+  const doc = await Product.findByIdAndDelete(id);
 
-  // if (!doc) {
-  //   throw new Error('No document found with this ID');
-  // }
+  if (!doc) {
+    throw new Error('No document found with this ID');
+  }
 
   return {
     status: 'success',
     message: `Category related to ${id} has been deleted`,
-    id: id,
+    id,
   };
 };

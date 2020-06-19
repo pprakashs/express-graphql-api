@@ -4,7 +4,7 @@ import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 
 const httpLink = createUploadLink({
-  uri: 'http://localhost:5000/graphql',
+  uri: 'http://api.pprakash.com:5000/admin/graphql',
 });
 
 const authLink = setContext((_, { headers }) => {

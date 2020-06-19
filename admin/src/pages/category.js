@@ -39,7 +39,7 @@ const Category = () => {
   const { loading, data, client } = useQuery(CATEGORY_LIST);
   const [updateMutate] = useMutation(UPDATE_CATEGORY);
   const [addMutate] = useMutation(ADD_CATEGORY);
-  const [deleteMutate] = useMutation(DELETE_CATEGORY);
+  const [deleteMutate, { error }] = useMutation(DELETE_CATEGORY);
 
   const [category, setCategory] = useState([]);
 
@@ -90,7 +90,7 @@ const Category = () => {
   const handleDelete = async (id) => {
     setButtonState(id);
     try {
-      deleteMutate({
+      await deleteMutate({
         variables: { id: id },
         update(client, result) {
           const allCategory = client.readQuery({ query: CATEGORY_LIST });
@@ -102,8 +102,10 @@ const Category = () => {
           setCategory(catList(allCategory.category.items));
         },
       });
-    } catch (error) {
-      //setLoader(visible);
+    } catch (err) {
+      setButtonState(null);
+      console.log(err.graphQLErrors[0]);
+      openNotificationWithIcon('error', err.graphQLErrors[0].message, '403');
     }
   };
 
@@ -117,7 +119,6 @@ const Category = () => {
           const allCategory = cache.readQuery({ query: CATEGORY_LIST });
 
           allCategory.category.items = [addCategory, ...category];
-          console.log(allCategory);
           cache.writeQuery({
             query: CATEGORY_LIST,
             data: allCategory,
@@ -132,28 +133,34 @@ const Category = () => {
       focusInput.current.focus();
 
       setLoader(false);
-    } catch (error) {
-      console.log(error);
-      openNotificationWithIcon('error', `${inputData.name} ${error.message.split(':')[1]}`, 'Error');
+    } catch (err) {
+      console.log(err.graphQLErrors[0]);
+      openNotificationWithIcon('error', err.graphQLErrors[0].message, '403');
       setLoader(false);
     }
   };
 
   const updateHandle = async (inputData) => {
-    setLoader(true);
-    const { name } = inputData;
-    const [cat] = category.filter((c) => c.id === editMode.id);
+    try {
+      setLoader(true);
+      const { name } = inputData;
+      const [cat] = category.filter((c) => c.id === editMode.id);
 
-    await updateMutate({
-      variables: { id: cat.id, name },
-    });
-    setEditMode({
-      mode: false,
-      id: null,
-    });
-    setLoader(false);
-    openNotificationWithIcon('success', `category has been updated`, 'Updated');
-    setVisible(false);
+      await updateMutate({
+        variables: { id: cat.id, name },
+      });
+      setEditMode({
+        mode: false,
+        id: null,
+      });
+      setLoader(false);
+      openNotificationWithIcon('success', `category has been updated`, 'Updated');
+      setVisible(false);
+    } catch (err) {
+      console.log(err.graphQLErrors[0]);
+      openNotificationWithIcon('error', err.graphQLErrors[0].message, '403');
+      setLoader(false);
+    }
   };
 
   const editHandle = (id) => {

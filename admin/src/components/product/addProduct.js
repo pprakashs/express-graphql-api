@@ -12,6 +12,14 @@ import { ProductContext } from './../../context/productContext';
 
 const { Option } = Select;
 
+const openNotificationWithIcon = (type, description, message) => {
+  notification[type]({
+    message: message,
+    description,
+    duration: 3,
+  });
+};
+
 const AddProduct = () => {
   const [files, setFiles] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -40,14 +48,6 @@ const AddProduct = () => {
     }
   }, [product]);
 
-  const openNotificationWithIcon = (type, description, message) => {
-    notification[type]({
-      message: message,
-      description,
-      duration: 3,
-    });
-  };
-
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(
       acceptedFiles.map((file) =>
@@ -59,54 +59,62 @@ const AddProduct = () => {
   }, []);
 
   const submitHandle = async (inputData) => {
-    console.log(inputData);
     if (product) {
       return updateHandle(inputData);
     }
     try {
-      setLoader(!loader);
+      setLoader(true);
       inputData.image = files[0];
 
-      const updateCache = (cache, { data: { addProduct } }) => {
-        const {
-          products: { items },
-        } = cache.readQuery({ query: PRODUCT_LIST });
-
-        cache.writeQuery({
-          query: PRODUCT_LIST,
-          data: {
-            products: {
-              items: [addProduct, ...items],
-              __typename: 'Item',
+      await addMutate({
+        variables: inputData,
+        update: (client, { data: { addProduct } }) => {
+          const allProduct = client.readQuery({
+            query: PRODUCT_LIST,
+          });
+          const items = [addProduct, ...allProduct.products.items];
+          client.writeQuery({
+            query: PRODUCT_LIST,
+            data: {
+              products: {
+                items,
+                __typename: 'Items',
+              },
+              __typename: 'Products',
             },
-            __typename: 'Product',
-          },
-        });
-      };
-
-      await addMutate({ variables: inputData, update: updateCache });
+          });
+        },
+      });
 
       openNotificationWithIcon('success', 'Product has been created', 'Created');
 
       // CLEAR FIELD
       formRef.current.resetFields();
       setFiles([]);
-      setLoader(loader);
+      setLoader(false);
     } catch (err) {
-      console.log(err);
+      setLoader(false);
+      console.log(err.graphQLErrors[0]);
+      openNotificationWithIcon('error', err.graphQLErrors[0].message, '403');
     }
   };
 
   const updateHandle = async (inputData) => {
-    //setLoader(!loader);
-    const [item] = product;
-    inputData.image = files[0];
-    await updateMutate({
-      variables: { id: item.id, ...inputData },
-    });
-    openNotificationWithIcon('success', `product has been updated`, 'Updated');
-    setLoader(loader);
-    dispatch({ type: 'CLOSE_DRAWER' });
+    try {
+      setLoader(true);
+      const [item] = product;
+      inputData.image = files[0];
+      await updateMutate({
+        variables: { id: item.id, ...inputData },
+      });
+      openNotificationWithIcon('success', `product has been updated`, 'Updated');
+      setLoader(false);
+      dispatch({ type: 'CLOSE_DRAWER' });
+    } catch (err) {
+      setLoader(false);
+      console.log(err.graphQLErrors[0]);
+      openNotificationWithIcon('error', err.graphQLErrors[0].message, '403');
+    }
   };
 
   const previewThumb = files.map((file) => (

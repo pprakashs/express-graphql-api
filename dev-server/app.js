@@ -26,7 +26,7 @@ const adminPath = '/admin/graphql';
 const shopPath = '/shop/graphql';
 
 //applying middleware to schema
-schema.applyMiddleware({ app });
-// schema.applyMiddleware({ app, path: shopPath });
+// schema.applyMiddleware({ app });
+schema.applyMiddleware({ app, path: adminPath });
 
 export default app;

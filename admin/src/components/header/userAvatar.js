@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import { Avatar, Dropdown, Menu } from 'antd';
 
+import { useLogout } from './../../util/logoutHook';
+
 const UserAvatar = () => {
+  const { logout } = useLogout();
   const menu = (
     <Menu className="user-drop-down">
       <Menu.Item>
-        <a target="_blank" rel="noopener noreferrer" href="#">
+        <a rel="noopener noreferrer" href="#">
           Setting
         </a>
       </Menu.Item>
       <Menu.Item>
-        <a target="_blank" rel="noopener noreferrer" href="#">
+        <a rel="noopener noreferrer" href="#" onClick={logout}>
           Logout
         </a>
       </Menu.Item>
@@ -20,7 +23,7 @@ const UserAvatar = () => {
 
   return (
     <Dropdown overlay={menu} placement="bottomRight" trigger={['click']}>
-      <Avatar size="large">U</Avatar>
+      <Avatar size="large" src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
     </Dropdown>
   );
 };

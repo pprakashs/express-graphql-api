@@ -74,6 +74,7 @@
     "clean": "rimraf server",
     "dev-server": "nodemon --exec babel-node ./dev-server/bin/www",
     "client-admin": "webpack-dev-server",
-    "watch:dev": "NODE_ENV=development npm-run-all --parallel dev-server  client-admin"
+    "react-admin:build": "webpack --mode production",
+    "watch:dev": "NODE_ENV=development npm-run-all --parallel dev-server client-admin"
   }
 }

@@ -40,14 +40,14 @@ const resolvers = {
     },
 
     //FOR CATEGORY
-    addCategory: (_, { req }) => {
+    addCategory: (_, args, { req }) => {
       return categoryCtrl.addCategory(args, req);
     },
     deleteCategory: (_, { id }, { req }) => {
       return categoryCtrl.deleteCategory(id, req);
     },
     updateCategory: (_, { id, name }, { req }) => {
-      return categoryCtrl.updateCategory(id, name);
+      return categoryCtrl.updateCategory(id, name, req);
     },
   },
 };

@@ -31,7 +31,9 @@ const categoryCtrl = {
     };
   },
 
-  updateCategory: async (id, name) => {
+  updateCategory: async (id, name, req) => {
+    //ONLY ADMIN CAN FORMER THIS ACTION
+    checkAuth(req, restrictTo);
     const doc = await Category.findByIdAndUpdate(id, { name }, { new: true, runValidators: true });
     await doc.save();
     if (!doc) {

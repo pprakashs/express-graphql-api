@@ -1,11 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
-import { Layout, Form, Input, Button, Alert, Row, Col, Typography, Space } from 'antd';
+import { Form, Input, Button, Alert, Row, Col, Typography } from 'antd';
 import { LOGIN } from './../graphql/queries';
 import { AuthContext } from './../context/auth';
-
-const { Content } = Layout;
 
 const Login = (props) => {
   const [userLogin, { error }] = useMutation(LOGIN);
@@ -17,7 +15,7 @@ const Login = (props) => {
   const loginHandle = async (inputData) => {
     try {
       setLoading(true);
-      userLogin({
+      await userLogin({
         variables: inputData,
         update(_, { data: { login: userData } }) {
           setLoading(false);
@@ -26,8 +24,8 @@ const Login = (props) => {
         },
       });
     } catch (err) {
-      console.log(err.graphQLErrors[0]);
       setLoading(false);
+      console.log(err.graphQLErrors[0]);
     }
   };
 
